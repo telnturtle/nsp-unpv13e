@@ -1,0 +1,25 @@
+
+/* Structure describing an Internet (IP) socket address. */
+#if  __UAPI_DEF_SOCKADDR_IN
+#define __SOCK_SIZE__   16              /* sizeof(struct sockaddr)      */
+struct sockaddr_in {
+  __kernel_sa_family_t  sin_family;     /* Address family               */
+  __be16                sin_port;       /* Port number                  */
+  struct in_addr        sin_addr;       /* Internet address             */
+
+  /* Pad to size of `struct sockaddr'. */
+  unsigned char         __pad[__SOCK_SIZE__ - sizeof(short int) -
+                        sizeof(unsigned short int) - sizeof(struct in_addr)];
+};
+
+
+/* POSIX.1g specifies this type name for the `sa_family' member.  */
+typedef unsigned short int sa_family_t;
+
+/* This macro is used to declare the initial common members
+   of the data types used for socket addresses, `struct sockaddr',
+   `struct sockaddr_in', `struct sockaddr_un', etc.  */
+
+#define __SOCKADDR_COMMON(sa_prefix) \
+  sa_family_t sa_prefix##family
+
