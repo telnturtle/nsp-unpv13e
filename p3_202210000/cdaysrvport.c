@@ -1,5 +1,6 @@
 #include	"unp.h"
 #include	<time.h>
+#include	<stdlib.h>
 
 int
 main(int argc, char **argv)
@@ -17,7 +18,7 @@ main(int argc, char **argv)
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sin_family      = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port        = htons((short)(argv[1]));	/* daytime server */
+	servaddr.sin_port        = htons((uint16_t)atoi(argv[1]));	/* daytime server */
 
 	Bind(listenfd, (SA *) &servaddr, sizeof(servaddr));
 
@@ -26,7 +27,7 @@ main(int argc, char **argv)
 	for ( ; ; ) {
 		pid_t pid;
 		socklen_t len = sizeof(cliaddr);
-		connfd = Accept(listenfd, (SA *) cliaddr, &len);
+		connfd = Accept(listenfd, (SA *) &cliaddr, &len);
 
 		if ( (pid = Fork()) == 0) {
 			Close(listenfd);	// child closes listening socket
