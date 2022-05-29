@@ -1,0 +1,15 @@
+~/git/unpv13e_0/p4_202210000 main ?3 ❯ ./p43shechosrv                                                       02:14:14 AM
+child 16835 terminated
+child 16832 terminated
+child 16833 terminated
+child 16834 terminated
+child 16836 terminated
+^C
+~/g/unpv13e_0/p4_202210000 main ?3 ❯ ps -t pts/6 -o pid,ppid,tty,stat,args,wchan                  х INT 19s 02:14:36 AM
+  PID  PPID TT       STAT COMMAND                     WCHAN
+  871   453 pts/6    Ss+  /usr/bin/zsh                x64_sys_poll
+  877   429 pts/6    S    /usr/bin/zsh                sigsuspend
+ 1118   429 pts/6    S    /usr/bin/zsh                core_sys_select
+ 1120   429 pts/6    S    /usr/bin/zsh                -
+ 1121   877 pts/6    Sl   /home/turtle/.cache/gitstat -
+~/git/unpv13e_0/p4_202210000 main ?3 ❯
