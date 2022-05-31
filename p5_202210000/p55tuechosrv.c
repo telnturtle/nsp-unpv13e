@@ -1,5 +1,9 @@
 #include	"unp.h"
 
+
+void sig_chld(int signo);
+
+
 int main(int argc, char **argv)
 {
 	int					listenfd, connfd, udpfd, nready, maxfdp1;
@@ -73,4 +77,15 @@ int main(int argc, char **argv)
 			Sendto(udpfd, mesg, n, 0, (SA *) &cliaddr, len);
 		}
 	}
+}
+
+
+void sig_chld(int signo)
+{
+	pid_t	pid;
+	int		stat;
+
+	while ( (pid = waitpid(-1, &stat, WNOHANG)) > 0)
+		printf("child %d terminated\n", pid);
+	return;
 }
