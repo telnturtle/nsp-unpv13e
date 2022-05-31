@@ -3,9 +3,10 @@
 int main(int argc, char **argv)
 {
 	int					listenfd, connfd, udpfd, nready, maxfdp1;
+	int 				i, maxi, maxfd, sockfd, client[FD_SETSIZE];
 	char				mesg[MAXLINE];
 	pid_t				childpid;
-	fd_set				rset;
+	fd_set				rset, allset;
 	ssize_t				n;
 	socklen_t			len;
 	const int			on = 1;
@@ -37,6 +38,12 @@ int main(int argc, char **argv)
 
 	Signal(SIGCHLD, sig_chld);	/* must call waitpid() */
 
+	maxfd = listenfd;			/* initialize */
+	maxi = -1;					/* index into client[] array */
+	for (i = 0; i < FD_SETSIZE; i++)
+		client[i] = -1;			/* -1 indicates available entry */
+	FD_ZERO(&allset);
+
 	FD_ZERO(&rset);
 	maxfdp1 = max(listenfd, udpfd) + 1;
 	for ( ; ; )
@@ -51,20 +58,55 @@ int main(int argc, char **argv)
 				err_sys("select error");
 		}
 
+		// Accept new TCP client
 		if (FD_ISSET(listenfd, &rset))
 		{
 			len = sizeof(cliaddr);
 			connfd = Accept(listenfd, (SA *) &cliaddr, &len);
-	
-			if ( (childpid = Fork()) == 0)		/* child process */
+
+			for (i = 0; i < FD_SETSIZE; i++)
 			{
-				Close(listenfd);	/* close listening socket */
-				str_echo(connfd);	/* process the request */
-				exit(0);
+				if (client[i] < 0)
+				{
+					client[i] = connfd; /* save descriptor */
+					break;
+				}
 			}
-			Close(connfd);			/* parent closes connected socket */
+			if (i == FD_SETSIZE)
+				err_quit("too many clients");
+
+			FD_SET(connfd, &allset);	/* add new descriptor to set */
+			if (connfd > maxfd)
+				maxfd = connfd;			/* for select */
+			if (i > maxi)
+				maxi = i;				/* max index in client[] array */
+			
+			if (--nready <= 0)
+				continue;				/* no more readable descriptors */
 		}
 
+		// TCP clients
+		for (i = 0; i <= maxi; i++)
+		{
+			if ( (sockfd = client[i]) < 0 )
+				continue;
+			if (FD_ISSET(sockfd, &rset))
+			{
+				if ( (n = Read(sockfd, mesg, MAXLINE)) == 0 )
+				{
+					Close(sockfd);		/* connection closed by client */
+					FD_CLR(sockfd, &allset);
+					client[i] = -1;
+				}
+				else
+					Writen(sockfd, mesg, n);
+
+				if (--nready <= 0)
+					break;				/* no more readable descriptors */
+			}
+		}
+
+		// UDP message
 		if (FD_ISSET(udpfd, &rset))
 		{
 			len = sizeof(cliaddr);
