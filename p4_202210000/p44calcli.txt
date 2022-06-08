@@ -1,0 +1,6 @@
+binary passing 문제를 해결한 방법:
+머신마다 다른 엔디안 문제를 회피하기 위해 클라이언트에서 htonl() 함수를 사용해서 network byte order로 전송하고, 서버에서 ntohl() 함수로 host byte order로 복구한 다음 계산함,
+서버에서 클라이언트로 보낼 때에도 htonl()과 ntohl() 함수를 동일한 방법으로 사용함.
+교재에서는 struct args와 result가 long 타입을 사용했으나 long 타입은 머신에 따라 32-bit와 64-bit가 다르기 때문에,
+htonl() 함수 등을 사용키 위해 그리고 음수도 사용하기 위해 struct args와 result의 변수 타입을 int32_t로 변경함.
+htonl() 함수 등은 uint32_t를 사용하지만 int32_t를 uint32_t로 캐스팅해도 4-byte에 쓰인 내용은 변하지 않기 때문에, (uint32_t)로 캐스팅하여 함수의 argument로 넘겨줌.
