@@ -1,9 +1,6 @@
 #include	"unp.h"
 
 
-void sig_chld(int signo);
-
-
 int main(int argc, char **argv)
 {
 	int					listenfd, connfd, udpfd, nready, maxfdp1;
